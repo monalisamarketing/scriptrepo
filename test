@@ -1,41 +1,44 @@
 #!/bin/bash
-sudo apt-get update && sudo apt-get install -y openvpn easy-rsa
-make-cadir certificates
+#./easyrsa --batch --req-cn=test gen-req test nopass
+client=$1
 
-sudo sed -i 's/`$EASY_RSA\/whichopensslcnf $EASY_RSA`/\"$EASY_RSA\/openssl-1.0.0.cnf\"/' ./certificates/vars
-source ./certificates/vars
+if [ x$client = x ]; then
+	echo "Usage: $0 clientname"
+    	exit 1
+fi
 
-./certificates/clean-all
+if [ ! -e keys/$client.key ]; then
+    echo "Generating keys..."
+    . vars
+    ./pkitool $client
+    echo "...keys generated."
+fi
 
-./certificates/pkitool" --initca
+#source vars && "$EASY_RSA/pkitool" client
+mkdir clients && 
+cp /usr/share/doc/openvpn/examples/sample-config-files/client.conf clients/$client.ovpn
+sed -i '/;user nobody/s/;//' ./clients/$client.ovpn
+sed -i '/;group nogroup/s/;//' ./clients/$client.ovpn
+#
+sed -i '/ca ca.crt/s/ca ca.crt/#ca ca.crt/' ./clients/$client.ovpn
+sed -i '/cert client.crt/s/cert client.crt/#cert client.crt/' ./clients/$client.ovpn
+sed -i '/key client.key/s/key client.key/#key client.key/' ./clients/$client.ovpn
+sed -i '/tls-auth ta.key 1/s/tls-auth ta.key 1/#tls-auth ta.key 1/' ./clients/$client.ovpn
+#client change proto tcp et le port et ajoute server a cote remote
 
-./certificates/pkitool --server server
+cat << EOF >> ./clients/$client.ovpn
+<ca>
+#Here goes the content of the ca.crt file
+</ca>
+<cert>
+#Here goes the content of the cert file
+</cert>
+<key>
+#Here goes the content of the key file
+</key>
 
-./certificates/build-dh
-
-openvpn --genkey --secret ./certificates/keys/ta.key
-
-sudo cp keys/{server.crt,server.key,ca.crt,dh2048.pem,ta.key} /etc/openvpn
-gzip -d -c /usr/share/doc/openvpn/examples/sample-config-files/server.conf.gz | sudo tee /etc/openvpn/server.conf > /dev/null
-#
-echo "second step"
-#
-sudo ufw allow openvpn 
-sudo sed -i 's/;push \"redirect-gateway def1 bypass-dhcp\"/push \"redirect-gateway def1 bypass-dhcp\"/' /etc/openvpn/server.conf
-#sudo sed -i '/;user nobody/s/;//' /etc/openvpn/server.conf
-#sudo sed -i '/;group nogroup/s/;//' /etc/openvpn/server.conf
-#proto tcp 943/443 ;tcp explicit-exit-notify 1 to 0; user nobody group nogroup
-sudo iptables -t nat -A POSTROUTING -s 10.8.0.0/24 -o eth0 -j MASQUERADE
-#
-sudo sed -i '/# End required lines/a *nat \n:POSTROUTING ACCEPT [0:0] \n-A POSTROUTING -s 10.8.0.0\/8 -o eth0 -j MASQUERADE/' /etc/ufw/before.rules
-#
-echo "third step" &&\
-#
-sudo sed -i '/^#.*net.ipv4.ip_forward/s/^#//' /etc/sysctl.conf
-sudo sysctl -p /etc/sysctl.conf
-#
-sudo sed -i '/DEFAULT_FORWARD_POLICY=/s/DROP/ACCEPT/' /etc/default/ufw
-sudo ufw reload
-#
-sudo systemctl start openvpn@server
-sudo systemctl is-active openvpn@server
+key-direction 1
+<tls-auth>
+# The content of the ta.key file
+</tls-auth>
+EOF
