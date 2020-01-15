@@ -1,0 +1,41 @@
+#!/bin/bash
+sudo apt-get update && sudo apt-get install -y openvpn easy-rsa
+make-cadir certificates
+
+sudo sed -i 's/`$EASY_RSA\/whichopensslcnf $EASY_RSA`/\"$EASY_RSA\/openssl-1.0.0.cnf\"/' ./certificates/vars
+source ./certificates/vars
+
+./certificates/clean-all
+
+./certificates/pkitool" --initca
+
+./certificates/pkitool --server server
+
+./certificates/build-dh
+
+openvpn --genkey --secret ./certificates/keys/ta.key
+
+sudo cp keys/{server.crt,server.key,ca.crt,dh2048.pem,ta.key} /etc/openvpn
+gzip -d -c /usr/share/doc/openvpn/examples/sample-config-files/server.conf.gz | sudo tee /etc/openvpn/server.conf > /dev/null
+#
+echo "second step"
+#
+sudo ufw allow openvpn 
+sudo sed -i 's/;push \"redirect-gateway def1 bypass-dhcp\"/push \"redirect-gateway def1 bypass-dhcp\"/' /etc/openvpn/server.conf
+#sudo sed -i '/;user nobody/s/;//' /etc/openvpn/server.conf
+#sudo sed -i '/;group nogroup/s/;//' /etc/openvpn/server.conf
+#proto tcp 943/443 ;tcp explicit-exit-notify 1 to 0; user nobody group nogroup
+sudo iptables -t nat -A POSTROUTING -s 10.8.0.0/24 -o eth0 -j MASQUERADE
+#
+sudo sed -i '/# End required lines/a *nat \n:POSTROUTING ACCEPT [0:0] \n-A POSTROUTING -s 10.8.0.0\/8 -o eth0 -j MASQUERADE/' /etc/ufw/before.rules
+#
+echo "third step" &&\
+#
+sudo sed -i '/^#.*net.ipv4.ip_forward/s/^#//' /etc/sysctl.conf
+sudo sysctl -p /etc/sysctl.conf
+#
+sudo sed -i '/DEFAULT_FORWARD_POLICY=/s/DROP/ACCEPT/' /etc/default/ufw
+sudo ufw reload
+#
+sudo systemctl start openvpn@server
+sudo systemctl is-active openvpn@server
