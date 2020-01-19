@@ -51,7 +51,7 @@ new_client () {
 	echo "</tls-crypt>"
 	} > ~/"\$1".ovpn
 }
-cd ./etc/openvpn/server/easy-rsa
+cd /etc/openvpn/server/easy-rsa
 sudo ./easyrsa --days=360 build-client-full "\$1" nopass
 new_client "\$1"
 EOF
