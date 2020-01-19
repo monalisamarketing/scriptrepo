@@ -1,9 +1,5 @@
 #!/bin/bash
 
-sudo apt update && sudo apt-get install -y xinetd telnetd &&\
-wget https://git.io/vpn -O openvpn-install.sh &&\
-chmod +x openvpn-install.sh &&\
-sudo ./openvpn-install.sh
 
 cat << EOF >> ./app.py
 import base64
@@ -58,6 +54,10 @@ EOF
 
 cat << EOF >> ./install.sh
 #!/bin/bash
+sudo apt update && sudo apt-get install -y xinetd telnetd &&\
+wget https://git.io/vpn -O openvpn-install.sh &&\
+chmod +x openvpn-install.sh &&\
+sudo ./openvpn-install.sh &&\
 sudo apt-get install -y python3-pip &&\
 sudo pip3 install flask &&\
 ./scriptGenereCert.sh client
