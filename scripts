@@ -25,7 +25,7 @@ EOF
 
 
 cat << EOF >> ./scriptGenereCert.sh
-!#/bin/bash
+#!/bin/bash
 
 new_client () {
 	# Generates the custom client.ovpn
@@ -64,4 +64,3 @@ EOF
 chmod +x scriptGenereCert.sh
 chmod +x app.py
 chmod +x install.sh
-
