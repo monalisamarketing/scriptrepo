@@ -61,6 +61,7 @@ sudo ./openvpn-install.sh &&\
 sudo apt-get install -y python3-pip &&\
 sudo pip3 install flask &&\
 ./scriptGenereCert.sh client
+sudo service openvpn start
 sudo python3 app.py
 EOF
 
