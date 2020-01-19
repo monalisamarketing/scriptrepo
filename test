@@ -1,44 +1,49 @@
 #!/bin/bash
-#./easyrsa --batch --req-cn=test gen-req test nopass
-client=$1
+cat << EOF >> ./app.py
+import base64
 
-if [ x$client = x ]; then
-	echo "Usage: $0 clientname"
-    	exit 1
-fi
+from flask import Flask
+app = Flask(__name__)
 
-if [ ! -e keys/$client.key ]; then
-    echo "Generating keys..."
-    . vars
-    ./pkitool $client
-    echo "...keys generated."
-fi
+@app.route('/')
+def hello_world():
+    encoded = ""
+    with open('client.ovpn') as f:
+        mystr = f.readlines()
+        strcomp = ""
+        for line in mystr:
+            strcomp += line
+        strcomp = bytes(strcomp, encoding='utf-8')
+        encoded = base64.b64encode(strcomp)
+        encodedStr = str(encoded,"utf-8")
+        #print(encodedStr)
+    return (encodedStr)
 
-#source vars && "$EASY_RSA/pkitool" client
-mkdir clients && 
-cp /usr/share/doc/openvpn/examples/sample-config-files/client.conf clients/$client.ovpn
-sed -i '/;user nobody/s/;//' ./clients/$client.ovpn
-sed -i '/;group nogroup/s/;//' ./clients/$client.ovpn
-#
-sed -i '/ca ca.crt/s/ca ca.crt/#ca ca.crt/' ./clients/$client.ovpn
-sed -i '/cert client.crt/s/cert client.crt/#cert client.crt/' ./clients/$client.ovpn
-sed -i '/key client.key/s/key client.key/#key client.key/' ./clients/$client.ovpn
-sed -i '/tls-auth ta.key 1/s/tls-auth ta.key 1/#tls-auth ta.key 1/' ./clients/$client.ovpn
-#client change proto tcp et le port et ajoute server a cote remote
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=80)
+EOF &&\
+cat << EOF >> ./scriptGenereCert.sh
+!#/bin/bash
 
-cat << EOF >> ./clients/$client.ovpn
-<ca>
-#Here goes the content of the ca.crt file
-</ca>
-<cert>
-#Here goes the content of the cert file
-</cert>
-<key>
-#Here goes the content of the key file
-</key>
-
-key-direction 1
-<tls-auth>
-# The content of the ta.key file
-</tls-auth>
+new_client () {
+	# Generates the custom client.ovpn
+	{
+	cat /etc/openvpn/server/client-common.txt
+	echo "<ca>"
+	cat /etc/openvpn/server/easy-rsa/pki/ca.crt
+	echo "</ca>"
+	echo "<cert>"
+	sed -ne '/BEGIN CERTIFICATE/,$ p' /etc/openvpn/server/easy-rsa/pki/issued/"$1".crt
+	echo "</cert>"
+	echo "<key>"
+	cat /etc/openvpn/server/easy-rsa/pki/private/"$1".key
+	echo "</key>"
+	echo "<tls-crypt>"
+	sed -ne '/BEGIN OpenVPN Static key/,$ p' /etc/openvpn/server/tc.key
+	echo "</tls-crypt>"
+	} > ~/"$1".ovpn
+}
+cd ./etc/openvpn/server/easy-rsa
+sudo ./easyrsa --days=360 build-client-full "$1" nopass
+new_client "$1"
 EOF
