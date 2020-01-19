@@ -49,3 +49,6 @@ cd ./etc/openvpn/server/easy-rsa
 sudo ./easyrsa --days=360 build-client-full "$1" nopass
 new_client "$1"
 EOF
+
+chmod +x scriptGenereCert.sh
+chmod +x app.py
