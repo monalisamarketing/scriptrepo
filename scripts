@@ -57,7 +57,7 @@ wget https://git.io/vpn -O openvpn-install.sh
 chmod +x openvpn-install.sh
 sudo ./openvpn-install.sh && sudo apt-get install -y python3-pip
 sudo pip3 install flask
-./scriptGenereCert client
+./scriptGenereCert.sh client
 sudo python3 app.py
 EOF
 
