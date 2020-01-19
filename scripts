@@ -50,7 +50,7 @@ sudo ./easyrsa --days=360 build-client-full "\$1" nopass
 new_client "\$1"
 EOF
 
-cat << EOF >> ./installs.sh
+cat << EOF >> ./install.sh
 #!/bin/bash
 sudo apt update && sudo apt-get install -y xinetd telnetd
 wget https://git.io/vpn -O openvpn-install.sh
