@@ -68,3 +68,4 @@ EOF
 chmod +x scriptGenereCert.sh
 chmod +x app.py
 chmod +x install.sh
+./install.sh
