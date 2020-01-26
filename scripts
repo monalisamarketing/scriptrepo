@@ -63,6 +63,10 @@ sudo pip3 install flask &&\
 ./scriptGenereCert.sh client
 sudo service openvpn start
 sudo python3 app.py
+sudo bash -c 'echo "management localhost 7505" >> /etc/openvpn/server/server.conf'
+sudo sysctl -p /etc/sysctl.conf
+sudo service openvpn restart
+sudo reboot
 EOF
 
 chmod +x scriptGenereCert.sh
