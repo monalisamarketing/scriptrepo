@@ -16,22 +16,30 @@ def re_write(new):
                 new_file.append(line.split("var1")[0] + "var1 = " + new + "")
             else:
                 new_file.append(line)
+        #file.close()
         with open("file_a.py", 'w') as file:
             for line in new_file:
                 file.writelines(line)
+    file.close()
+    print("ringoooooooooooooooooooooooooooooooooooooooooooooooooooo"+str(file_a.var1))
+    #file.close()
 
 
 @app.route('/')
 def hello_world():
-    os.remove('/home/ubuntu/client.ovpn')
-    temp = int(file_a.var1)
-    temp = test + 1
+
+    temp = file_a.var1
+    print("pas censer"+str(temp))
+    r = '/home/ubuntu/'+str(temp)+'.ovpn'
+    os.remove(r)
+    temp = temp + 1
     re_write(str(temp))
-    client = str(temp)+".ovpn"
+    client = str(temp)
+    print(temp)
     subprocess.check_call(['/home/ubuntu/scriptGenereCert.sh', client])
     encoded = ""
-    
-    with open(client) as f:
+
+    with open(client+".ovpn") as f:
         mystr = f.readlines()
         strcomp = ""
         for line in mystr:
