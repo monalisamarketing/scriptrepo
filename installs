@@ -1,8 +1,46 @@
-#!/bin/bash
-sudo apt update && sudo apt-get install -y xinetd telnetd
-wget https://git.io/vpn -O openvpn-install.sh
-chmod +x openvpn-install.sh
-sudo ./openvpn-install.sh && sudo apt-get install -y python3-pip
-sudo pip3 install flask
-./scriptGenereCert client
-sudo python3 app.py
+import base64
+import file_a
+import sys
+import subprocess
+import os
+
+
+from flask import Flask
+app = Flask(__name__)
+
+def re_write(new):
+    with open("file_a.py", 'r') as file:
+        new_file = []
+        for line in file:
+            if "var1" in line:
+                new_file.append(line.split("var1")[0] + "var1 = " + new + "")
+            else:
+                new_file.append(line)
+        with open("file_a.py", 'w') as file:
+            for line in new_file:
+                file.writelines(line)
+
+
+@app.route('/')
+def hello_world():
+    os.remove('/home/ubuntu/client.ovpn')
+    temp = int(file_a.var1)
+    temp = test + 1
+    re_write(str(temp))
+    client = str(temp)+".ovpn"
+    subprocess.check_call(['/home/ubuntu/scriptGenereCert.sh', client])
+    encoded = ""
+    
+    with open(client) as f:
+        mystr = f.readlines()
+        strcomp = ""
+        for line in mystr:
+            strcomp += line
+        strcomp = bytes(strcomp, encoding='utf-8')
+        encoded = base64.b64encode(strcomp)
+        encodedStr = str(encoded,"utf-8")
+        #print(encodedStr)
+    return (encodedStr)
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=80)
