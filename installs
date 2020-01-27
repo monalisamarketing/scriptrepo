@@ -1,5 +1,5 @@
 import base64
-import file_a
+#import file_a
 import sys
 import subprocess
 import os
@@ -7,6 +7,13 @@ import os
 
 from flask import Flask
 app = Flask(__name__)
+
+def getVarFromFile(filename):
+    import imp
+    f = open(filename)
+    global data
+    data = imp.load_source('data', '', f)
+    f.close()
 
 def re_write(new):
     with open("file_a.py", 'r') as file:
@@ -21,14 +28,13 @@ def re_write(new):
             for line in new_file:
                 file.writelines(line)
     file.close()
-    print("ringoooooooooooooooooooooooooooooooooooooooooooooooooooo"+str(file_a.var1))
     #file.close()
 
 
 @app.route('/')
 def hello_world():
-
-    temp = file_a.var1
+    getVarFromFile('file_a.py')
+    temp = data.var1
     print("pas censer"+str(temp))
     r = '/home/ubuntu/'+str(temp)+'.ovpn'
     os.remove(r)
