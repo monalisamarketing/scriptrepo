@@ -32,7 +32,7 @@ def re_write(new):
 def hello_world():
     getVarFromFile('file_a.py')
     temp = data.var1
-    print("pas censer"+str(temp))
+    print("check -1"+str(temp))
     r = '/home/ubuntu/'+str(temp)+'.ovpn'
     os.remove(r)
     temp = temp + 1
