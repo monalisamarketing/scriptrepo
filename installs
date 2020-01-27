@@ -1,5 +1,4 @@
 import base64
-#import file_a
 import sys
 import subprocess
 import os
@@ -23,12 +22,10 @@ def re_write(new):
                 new_file.append(line.split("var1")[0] + "var1 = " + new + "")
             else:
                 new_file.append(line)
-        #file.close()
         with open("file_a.py", 'w') as file:
             for line in new_file:
                 file.writelines(line)
     file.close()
-    #file.close()
 
 
 @app.route('/')
