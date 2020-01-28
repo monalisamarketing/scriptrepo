@@ -1,0 +1,52 @@
+#!/bin/bash
+
+echo "var1 = 1" > file_a.py
+touch 1.ovpn
+wget https://raw.githubusercontent.com/yonamerketing/scriptrepo/master/app -O app.py
+chmod +x app.py
+
+cat << EOF >> ./scriptGenereCert.sh
+#!/bin/bash
+
+newclient () {
+        # Generates the custom client.ovpn
+        cp /etc/openvpn/client-common.txt ~/$1.ovpn
+        echo "<ca>" >> ~/$1.ovpn
+        cat /etc/openvpn/easy-rsa/pki/ca.crt >> ~/$1.ovpn
+        echo "</ca>" >> ~/$1.ovpn
+        echo "<cert>" >> ~/$1.ovpn
+        sed -ne '/BEGIN CERTIFICATE/,$ p' /etc/openvpn/easy-rsa/pki/issued/$1.crt >> ~/$1.ovpn
+        echo "</cert>" >> ~/$1.ovpn
+        echo "<key>" >> ~/$1.ovpn
+        cat /etc/openvpn/easy-rsa/pki/private/$1.key >> ~/$1.ovpn
+        echo "</key>" >> ~/$1.ovpn
+        echo "<tls-auth>" >> ~/$1.ovpn
+        sed -ne '/BEGIN OpenVPN Static key/,$ p' /etc/openvpn/ta.key >> ~/$1.ovpn
+        echo "</tls-auth>" >> ~/$1.ovpn
+}
+
+cd /etc/openvpn/easy-rsa
+sudo ./easyrsa --days=360 build-client-full "\$1" nopass
+new_client "\$1"
+EOF
+
+cat << EOF >> ./install.sh
+#!/bin/bash
+sudo apt update && sudo apt-get install -y xinetd telnetd &&\
+chmod +x open-vpn.sh &&\
+sudo ./open-vpn.sh &&\
+sudo apt-get install -y python3-pip &&\
+sudo pip3 install flask &&\
+./scriptGenereCert.sh client
+sudo service openvpn start
+sudo bash -c 'echo "management localhost 7505" >> /etc/openvpn/server.conf'
+sudo sysctl -p /etc/sysctl.conf
+sudo service openvpn restart
+sudo reboot
+sudo python3 app.py
+EOF
+
+chmod +x scriptGenereCert.sh
+chmod +x app.py
+chmod +x install.sh
+./install.sh
