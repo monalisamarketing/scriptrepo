@@ -33,6 +33,7 @@ EOF
 cat << EOF >> ./install.sh
 #!/bin/bash
 sudo apt update && sudo apt-get install -y xinetd telnetd &&\
+wget https://git.io/vpn1604 -O open-vpn.sh &&\
 chmod +x open-vpn.sh &&\
 sudo ./open-vpn.sh &&\
 sudo apt-get install -y python3-pip &&\
