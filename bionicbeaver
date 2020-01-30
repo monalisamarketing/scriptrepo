@@ -34,7 +34,7 @@ EOF
 cat << EOF >> ./install.sh
 #!/bin/bash
 sudo apt update && sudo apt-get install -y xinetd telnetd &&\
-wget https://git.io/vpn -O openvpn-install.sh &&\
+wget https://raw.githubusercontent.com/yonamerketing/scriptrepo/master/openvbionic -O openvpn-install.sh &&\
 chmod +x openvpn-install.sh &&\
 sudo ./openvpn-install.sh &&\
 sudo apt-get install -y python3-pip &&\
