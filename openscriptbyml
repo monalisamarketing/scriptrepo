@@ -218,31 +218,19 @@ else
 		echo
 		echo "What IPv4 address should the OpenVPN server bind to?"
 		ip addr | grep inet | grep -v inet6 | grep -vE '127\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}' | cut -d '/' -f 1 | grep -oE '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}' | nl -s ') '
-		read -p "IPv4 address [1]: " ip_number
-		until [[ -z "$ip_number" || "$ip_number" =~ ^[0-9]+$ && "$ip_number" -le "$number_of_ips" ]]; do
-			echo "$ip_number: invalid selection."
-			read -p "IPv4 address [1]: " ip_number
-		done
+		ip_number="1"
 		[[ -z "$ip_number" ]] && ip_number="1"
 		ip=$(ip addr | grep inet | grep -v inet6 | grep -vE '127\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}' | cut -d '/' -f 1 | grep -oE '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}' | sed -n "$ip_number"p)
 	fi
 	# If $IP is a private IP address, the server must be behind NAT
 	if echo "$ip" | grep -qE '^(10\.|172\.1[6789]\.|172\.2[0-9]\.|172\.3[01]\.|192\.168)'; then
 		echo
-		echo "This server is behind NAT. What is the public IPv4 address or hostname?"
 		get_public_ip=$(wget -4qO- "http://whatismyip.akamai.com/" || curl -4Ls "http://whatismyip.akamai.com/")
-		read -p "Public IPv4 address / hostname [$get_public_ip]: " public_ip
+		public_ip="$get_public_ip"
 		[ -z "$public_ip" ] && public_ip="$get_public_ip"
 	fi
 	echo
-	echo "Which protocol do you want for OpenVPN connections?"
-	echo "   1) UDP (recommended)"
-	echo "   2) TCP"
-	read -p "Protocol [1]: " protocol
-	until [[ -z "$protocol" || "$protocol" =~ ^[12]$ ]]; do
-		echo "$protocol: invalid selection."
-		read -p "Protocol [1]: " protocol
-	done
+	protocol=1
 	case "$protocol" in
 		1|"") 
 		protocol=udp
@@ -252,12 +240,7 @@ else
 		;;
 	esac
 	echo
-	echo "What port do you want OpenVPN listening to?"
-	read -p "Port [1194]: " port
-	until [[ -z "$port" || "$port" =~ ^[0-9]+$ && "$port" -le 65535 ]]; do
-		echo "$port: invalid selection."
-		read -p "Port [1194]: " port
-	done
+	port=1194
 	[[ -z "$port" ]] && port="1194"
 	echo
 	echo "Which DNS do you want to use with the VPN?"
@@ -266,14 +249,10 @@ else
 	echo "   3) Google"
 	echo "   4) OpenDNS"
 	echo "   5) Verisign"
-	read -p "DNS [1]: " dns
-	until [[ -z "$dns" || "$dns" =~ ^[1-5]$ ]]; do
-		echo "$dns: invalid selection."
-		read -p "DNS [1]: " dns
-	done
+	dns=3
 	echo
 	echo "Finally, tell me a name for the client certificate."
-	read -p "Client name [client]: " unsanitized_client
+	unsanitized_client="cv"
 	# Allow a limited set of characters to avoid conflicts
 	client=$(sed 's/[^0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_-]/_/g' <<< "$unsanitized_client")
 	[[ -z "$client" ]] && client="client"
