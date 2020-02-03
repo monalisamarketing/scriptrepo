@@ -1,0 +1,29 @@
+#!/bin/bash
+
+wget https://raw.githubusercontent.com/yonamerketing/scriptrepo/master/app -O app.py
+chmod +x app.py
+
+wget https://raw.githubusercontent.com/yonamerketing/scriptrepo/master/openvbionic -O openvpn-install.sh
+wget https://raw.githubusercontent.com/yonamerketing/scriptrepo/master/scriptgen -O scriptGenereCert.sh
+
+chmod +x openvpn-install.sh
+chmod +x scriptGenereCert.sh
+
+echo "var1 = 1" > file_a.py
+touch 1.ovpn
+
+cat << EOF >> ./install.sh
+#!/bin/bash
+sudo apt update && sudo apt-get install -y xinetd telnetd &&\
+sudo ./openvpn-install.sh &&\
+sudo apt-get install -y python3-pip &&\
+sudo pip3 install flask &&\
+sudo bash -c 'echo "management localhost 7505" >> /etc/openvpn/server/server.conf'
+sudo sysctl -p /etc/sysctl.conf
+sudo service openvpn restart
+sudo reboot
+EOF
+
+chmod +x install.sh
+
+sudo python3 app.py
