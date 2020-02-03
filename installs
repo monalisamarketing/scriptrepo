@@ -7,3 +7,4 @@ sudo pip3 install flask &&\
 sudo bash -c 'echo "management localhost 7505" >> /etc/openvpn/server/server.conf'
 sudo sysctl -p /etc/sysctl.conf
 sudo service openvpn restart
+sudo python3 app.py
