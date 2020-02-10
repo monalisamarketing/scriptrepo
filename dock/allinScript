@@ -32,12 +32,8 @@ EOF
 
 cat << EOF >> ./install.sh
 #!/bin/bash
-apt update && apt-get install -y xinetd telnetd &&\
-wget https://raw.githubusercontent.com/yonamerketing/scriptrepo/master/openvbionic -O openvpn-install.sh &&\
-chmod +x openvpn-install.sh &&\
+
 ./openvpn-install.sh &&\
-apt-get install -y python3-pip &&\
-pip3 install flask &&\
 ./scriptGenereCert.sh client
 service openvpn start
 bash -c 'echo "management localhost 7505" >> /etc/openvpn/server/server.conf'
