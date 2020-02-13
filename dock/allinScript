@@ -33,7 +33,7 @@ EOF
 cat << EOF >> ./install.sh
 #!/bin/bash
 
-./openvpn-install.sh &&\
+./openvpn-docker.sh &&\
 ./scriptGenereCert.sh client
 service openvpn start
 bash -c 'echo "management localhost 7505" >> /etc/openvpn/server/server.conf'
