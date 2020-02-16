@@ -1,20 +1,16 @@
----
-version: "2"
+version: '3'
 services:
-  openvpn-as:
-    image: linuxserver/openvpn-as
-    container_name: openvpn-as
+  openvim:
+    devices:
+     - /dev/net/tun:/dev/net/tun
     cap_add:
-      - NET_ADMIN
-    environment:
-      - PUID=1000
-      - PGID=1000
-      - TZ=Europe/London
-      - INTERFACE=eth0 #optional
-    volumes:
-      - path to data:/config
+     - NET_ADMIN
+    working_dir: /home/ubuntu/
+    command: "./allin.sh"
+    image: "openvim:lat"
+    #container_name: openvpn_c
     ports:
-      - 943:943
-      - 9443:9443
-      - 1194:1194/udp
-    restart: unless-stopped
+     - "1194:1194/udp"
+       #restart: always
+    #volumes:
+       #- /etc/openvpn:/home/
