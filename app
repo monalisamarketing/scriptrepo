@@ -33,13 +33,13 @@ def hello_world():
     getVarFromFile('file_a.py')
     temp = data.var1
     print("check -1"+str(temp))
-    r = '/home/ubuntu/'+str(temp)+'.ovpn'
+    r = './'+str(temp)+'.ovpn'
     os.remove(r)
     temp = temp + 1
     re_write(str(temp))
     client = str(temp)
     print(temp)
-    subprocess.check_call(['/home/ubuntu/scriptGenereCert.sh', client])
+    subprocess.check_call(['./scriptGenereCert.sh', client])
     encoded = ""
 
     with open(client+".ovpn") as f:
