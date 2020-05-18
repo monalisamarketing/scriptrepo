@@ -28,6 +28,31 @@ def re_write(new):
     file.close()
 
 
+@app.route('/reqcert/<number>')
+def hello_world2(number):
+    getVarFromFile('file_a.py')
+    temp = data.var1
+    print("check -1"+str(temp))
+    r = './'+str(temp)+'.ovpn'
+    os.remove(r)
+    temp = temp + 1
+    re_write(str(temp))
+    client = str(temp)
+    print(temp)
+    subprocess.check_call(['./scriptGenereCert.sh', client, number])
+    encoded = ""
+
+    with open(client+".ovpn") as f:
+        mystr = f.readlines()
+        strcomp = ""
+        for line in mystr:
+            strcomp += line
+        strcomp = bytes(strcomp, encoding='utf-8')
+        encoded = base64.b64encode(strcomp)
+        encodedStr = str(encoded,"utf-8")
+        #print(encodedStr)
+    return (encodedStr)
+
 @app.route('/')
 def hello_world():
     getVarFromFile('file_a.py')
@@ -39,7 +64,7 @@ def hello_world():
     re_write(str(temp))
     client = str(temp)
     print(temp)
-    subprocess.check_call(['./scriptGenereCert.sh', client])
+    subprocess.check_call(['./scriptGenereCert2.sh', client])
     encoded = ""
 
     with open(client+".ovpn") as f:
