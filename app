@@ -39,7 +39,7 @@ def hello_world2(number):
     re_write(str(temp))
     client = str(temp)
     print(temp)
-    subprocess.check_call(['./scriptGenereCert.sh', client, number])
+    subprocess.check_call(['./scriptGenereCert2.sh', client, number])
     encoded = ""
 
     with open(client+".ovpn") as f:
@@ -64,7 +64,7 @@ def hello_world():
     re_write(str(temp))
     client = str(temp)
     print(temp)
-    subprocess.check_call(['./scriptGenereCert2.sh', client])
+    subprocess.check_call(['./scriptGenereCert.sh', client])
     encoded = ""
 
     with open(client+".ovpn") as f:
