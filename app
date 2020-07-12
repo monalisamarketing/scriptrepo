@@ -53,30 +53,5 @@ def hello_world2(number):
         #print(encodedStr)
     return (encodedStr)
 
-@app.route('/')
-def hello_world():
-    getVarFromFile('file_a.py')
-    temp = data.var1
-    print("check -1"+str(temp))
-    r = './'+str(temp)+'.ovpn'
-    os.remove(r)
-    temp = temp + 1
-    re_write(str(temp))
-    client = str(temp)
-    print(temp)
-    subprocess.check_call(['./scriptGenereCert.sh', client])
-    encoded = ""
-
-    with open(client+".ovpn") as f:
-        mystr = f.readlines()
-        strcomp = ""
-        for line in mystr:
-            strcomp += line
-        strcomp = bytes(strcomp, encoding='utf-8')
-        encoded = base64.b64encode(strcomp)
-        encodedStr = str(encoded,"utf-8")
-        #print(encodedStr)
-    return (encodedStr)
-
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
