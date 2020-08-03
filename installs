@@ -2,6 +2,7 @@
 
 sudo apt update && sudo apt-get install -y xinetd telnetd &&\
 sudo ./openvpn-install.sh &&\
+sudo apt-get install -y redsocks &&\
 sudo apt-get install -y python3-pip &&\
 sudo pip3 install flask &&\
 sudo pip3 install waitress &&\
