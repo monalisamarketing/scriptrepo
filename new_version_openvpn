@@ -171,9 +171,9 @@ if [[ ! -e /etc/openvpn/server/server.conf ]]; then
 	port=443
 	until [[ -z "$port" || "$port" =~ ^[0-9]+$ && "$port" -le 65535 ]]; do
 		echo "$port: invalid port."
-		read -p "Port [443]: " port
+		read -p "Port [1194]: " port
 	done
-	[[ -z "$port" ]] && port="443"
+	[[ -z "$port" ]] && port="1194"
 	echo
 	echo "Select a DNS server for the clients:"
 	echo "   1) Current system resolvers"
@@ -273,7 +273,7 @@ server 10.8.0.0 255.255.255.0" > /etc/openvpn/server/server.conf
 	if [[ -z "$ip6" ]]; then
 		echo 'push "redirect-gateway def1 bypass-dhcp"' >> /etc/openvpn/server/server.conf
 	else
-		echo 'server-ipv6 fddd:443:443:443::/64' >> /etc/openvpn/server/server.conf
+		echo 'server-ipv6 fddd:1194:1194:1194::/64' >> /etc/openvpn/server/server.conf
 		echo 'push "redirect-gateway def1 ipv6 bypass-dhcp"' >> /etc/openvpn/server/server.conf
 	fi
 	echo 'ifconfig-pool-persist ipp.txt' >> /etc/openvpn/server/server.conf
@@ -348,10 +348,10 @@ crl-verify crl.pem" >> /etc/openvpn/server/server.conf
 		firewall-cmd --direct --add-rule ipv4 nat POSTROUTING 0 -s 10.8.0.0/24 ! -d 10.8.0.0/24 -j SNAT --to "$ip"
 		firewall-cmd --permanent --direct --add-rule ipv4 nat POSTROUTING 0 -s 10.8.0.0/24 ! -d 10.8.0.0/24 -j SNAT --to "$ip"
 		if [[ -n "$ip6" ]]; then
-			firewall-cmd --zone=trusted --add-source=fddd:443:443:443::/64
-			firewall-cmd --permanent --zone=trusted --add-source=fddd:443:443:443::/64
-			firewall-cmd --direct --add-rule ipv6 nat POSTROUTING 0 -s fddd:443:443:443::/64 ! -d fddd:443:443:443::/64 -j SNAT --to "$ip6"
-			firewall-cmd --permanent --direct --add-rule ipv6 nat POSTROUTING 0 -s fddd:443:443:443::/64 ! -d fddd:443:443:443::/64 -j SNAT --to "$ip6"
+			firewall-cmd --zone=trusted --add-source=fddd:1194:1194:1194::/64
+			firewall-cmd --permanent --zone=trusted --add-source=fddd:1194:1194:1194::/64
+			firewall-cmd --direct --add-rule ipv6 nat POSTROUTING 0 -s fddd:1194:1194:1194::/64 ! -d fddd:1194:1194:1194::/64 -j SNAT --to "$ip6"
+			firewall-cmd --permanent --direct --add-rule ipv6 nat POSTROUTING 0 -s fddd:1194:1194:1194::/64 ! -d fddd:1194:1194:1194::/64 -j SNAT --to "$ip6"
 		fi
 	else
 		# Create a service to set up persistent iptables rules
@@ -376,11 +376,11 @@ ExecStop=$iptables_path -D INPUT -p $protocol --dport $port -j ACCEPT
 ExecStop=$iptables_path -D FORWARD -s 10.8.0.0/24 -j ACCEPT
 ExecStop=$iptables_path -D FORWARD -m state --state RELATED,ESTABLISHED -j ACCEPT" > /etc/systemd/system/openvpn-iptables.service
 		if [[ -n "$ip6" ]]; then
-			echo "ExecStart=$ip6tables_path -t nat -A POSTROUTING -s fddd:443:443:443::/64 ! -d fddd:443:443:443::/64 -j SNAT --to $ip6
-ExecStart=$ip6tables_path -I FORWARD -s fddd:443:443:443::/64 -j ACCEPT
+			echo "ExecStart=$ip6tables_path -t nat -A POSTROUTING -s fddd:1194:1194:1194::/64 ! -d fddd:1194:1194:1194::/64 -j SNAT --to $ip6
+ExecStart=$ip6tables_path -I FORWARD -s fddd:1194:1194:1194::/64 -j ACCEPT
 ExecStart=$ip6tables_path -I FORWARD -m state --state RELATED,ESTABLISHED -j ACCEPT
-ExecStop=$ip6tables_path -t nat -D POSTROUTING -s fddd:443:443:443::/64 ! -d fddd:443:443:443::/64 -j SNAT --to $ip6
-ExecStop=$ip6tables_path -D FORWARD -s fddd:443:443:443::/64 -j ACCEPT
+ExecStop=$ip6tables_path -t nat -D POSTROUTING -s fddd:1194:1194:1194::/64 ! -d fddd:1194:1194:1194::/64 -j SNAT --to $ip6
+ExecStop=$ip6tables_path -D FORWARD -s fddd:1194:1194:1194::/64 -j ACCEPT
 ExecStop=$ip6tables_path -D FORWARD -m state --state RELATED,ESTABLISHED -j ACCEPT" >> /etc/systemd/system/openvpn-iptables.service
 		fi
 		echo "RemainAfterExit=yes
@@ -389,7 +389,7 @@ WantedBy=multi-user.target" >> /etc/systemd/system/openvpn-iptables.service
 		systemctl enable --now openvpn-iptables.service
 	fi
 	# If SELinux is enabled and a custom port was selected, we need this
-	if sestatus 2>/dev/null | grep "Current mode" | grep -q "enforcing" && [[ "$port" != 443 ]]; then
+	if sestatus 2>/dev/null | grep "Current mode" | grep -q "enforcing" && [[ "$port" != 1194 ]]; then
 		# Install semanage if not already present
 		if ! hash semanage 2>/dev/null; then
 			if [[ "$os_version" -eq 7 ]]; then
@@ -521,17 +521,17 @@ else
 					firewall-cmd --direct --remove-rule ipv4 nat POSTROUTING 0 -s 10.8.0.0/24 ! -d 10.8.0.0/24 -j SNAT --to "$ip"
 					firewall-cmd --permanent --direct --remove-rule ipv4 nat POSTROUTING 0 -s 10.8.0.0/24 ! -d 10.8.0.0/24 -j SNAT --to "$ip"
 					if grep -qs "server-ipv6" /etc/openvpn/server/server.conf; then
-						ip6=$(firewall-cmd --direct --get-rules ipv6 nat POSTROUTING | grep '\-s fddd:443:443:443::/64 '"'"'!'"'"' -d fddd:443:443:443::/64' | grep -oE '[^ ]+$')
-						firewall-cmd --zone=trusted --remove-source=fddd:443:443:443::/64
-						firewall-cmd --permanent --zone=trusted --remove-source=fddd:443:443:443::/64
-						firewall-cmd --direct --remove-rule ipv6 nat POSTROUTING 0 -s fddd:443:443:443::/64 ! -d fddd:443:443:443::/64 -j SNAT --to "$ip6"
-						firewall-cmd --permanent --direct --remove-rule ipv6 nat POSTROUTING 0 -s fddd:443:443:443::/64 ! -d fddd:443:443:443::/64 -j SNAT --to "$ip6"
+						ip6=$(firewall-cmd --direct --get-rules ipv6 nat POSTROUTING | grep '\-s fddd:1194:1194:1194::/64 '"'"'!'"'"' -d fddd:1194:1194:1194::/64' | grep -oE '[^ ]+$')
+						firewall-cmd --zone=trusted --remove-source=fddd:1194:1194:1194::/64
+						firewall-cmd --permanent --zone=trusted --remove-source=fddd:1194:1194:1194::/64
+						firewall-cmd --direct --remove-rule ipv6 nat POSTROUTING 0 -s fddd:1194:1194:1194::/64 ! -d fddd:1194:1194:1194::/64 -j SNAT --to "$ip6"
+						firewall-cmd --permanent --direct --remove-rule ipv6 nat POSTROUTING 0 -s fddd:1194:1194:1194::/64 ! -d fddd:1194:1194:1194::/64 -j SNAT --to "$ip6"
 					fi
 				else
 					systemctl disable --now openvpn-iptables.service
 					rm -f /etc/systemd/system/openvpn-iptables.service
 				fi
-				if sestatus 2>/dev/null | grep "Current mode" | grep -q "enforcing" && [[ "$port" != 443 ]]; then
+				if sestatus 2>/dev/null | grep "Current mode" | grep -q "enforcing" && [[ "$port" != 1194 ]]; then
 					semanage port -d -t openvpn_port_t -p "$protocol" "$port"
 				fi
 				systemctl disable --now openvpn-server@server.service
