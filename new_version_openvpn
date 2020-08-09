@@ -173,7 +173,7 @@ if [[ ! -e /etc/openvpn/server/server.conf ]]; then
 		echo "$port: invalid port."
 		read -p "Port [1194]: " port
 	done
-	[[ -z "$port" ]] && port="1194"
+	[[ -z "$port" ]] && port="443"
 	echo
 	echo "Select a DNS server for the clients:"
 	echo "   1) Current system resolvers"
