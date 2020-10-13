@@ -1,0 +1,76 @@
+{
+  "inbounds": [
+    {
+      "port": 1080, 
+      "protocol": "socks", 
+      "sniffing": {
+        "enabled": true, //一定要开启 sniffing，V2Ray 才能识别 Netflix 的流量
+        "destOverride": ["http", "tls"]
+      },
+      "settings": {
+        "auth": "noauth"  
+      }
+    }
+  ],
+  "outbounds": [
+    {
+      // VPS1 的配置
+      "tag": "VPS1"
+      "protocol": "vmess",
+      "settings": {
+        "vnext": [{
+          "address": "1.2.3.4", 
+          "port": 10086,
+          "users": [{
+            "id": "23ad6b10-8d1a-40f7-8ad0-e3e35cd38297",
+            "security": "auto",
+            "alterId": 64
+          }]
+        }]
+      },
+      "proxySettings": {
+        "tag": "VPS2"  // VPS2 的 tag，表示 VPS1 的流量由 VPS2 转发
+      }
+    },
+    {
+      // VPS2 的配置
+      "tag": "VPS2"
+      "protocol": "vmess",
+      "settings": {
+        "vnext": [{
+          "address": "2.2.3.5", 
+          "port": 16823,
+          "users": [{
+            "id": "b831381d-6324-4d53-ad4f-8cda48b30811",
+            "security": "auto",
+            "alterId": 64
+          }]
+        }]
+      }
+    },
+    {
+      "tag": "direct",
+      "protocol": "freedom",
+      "settings": {}
+    }
+  ],
+  "routing": {
+    "rules": [
+      {
+        "type": "field",
+        "outboundTag": "direct",
+        "domain": ["geosite:cn"] // 国内直连
+      },    
+      {
+        "type": "field",
+        "outboundTag": "VPS1",
+        "domain": ["geosite:netflix"] // netflix 走 VPS1
+      },
+      {
+        "type": "field",
+        "outboundTag": "VPS2",
+        "network": "udp,tcp" // 其余走 VPS2
+      }  
+    ]
+  }
+}
